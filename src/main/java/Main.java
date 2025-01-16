@@ -20,7 +20,8 @@ public class Main {
 
       // get correlation_id from client
       byte[] correlation_id = new byte[4]; 
-      clientSocket.getInputStream().read(correlation_id, 8, 4);
+      byte[] other_fields = clientSocket.getInputStream().readNBytes(8);
+      clientSocket.getInputStream().read(correlation_id);
 
       clientSocket.getOutputStream().write(new byte[] {0, 0, 0, 0});
       clientSocket.getOutputStream().write(correlation_id);
