@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -17,10 +18,8 @@ public class Main {
       // Wait for connection from client
       clientSocket = serverSocket.accept();
 
-      int message_size = 0;
-      int correlation_id = 7;
-      clientSocket.getOutputStream().write(message_size);
-      clientSocket.getOutputStream().write(correlation_id);
+      clientSocket.getOutputStream().write(new byte[] {0, 0, 0, 0});
+      clientSocket.getOutputStream().write(new byte[] {0, 0, 0, 7});
 
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
