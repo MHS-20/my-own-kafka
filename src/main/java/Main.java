@@ -16,6 +16,12 @@ public class Main {
 
       // Wait for connection from client
       clientSocket = serverSocket.accept();
+
+      int message_size = 0;
+      int correlation_id = 7;
+      clientSocket.getOutputStream().write(message_size);
+      clientSocket.getOutputStream().write(correlation_id);
+
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
     } finally {
