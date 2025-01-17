@@ -32,7 +32,7 @@ public class Main {
 
       // check api version
       byte[] error_code = new byte[2];
-      int apiV = ByteBuffer.wrap(request_api_version).getInt();
+      short apiV = ByteBuffer.wrap(request_api_version).getShort();
       if (apiV > 4)
         error_code = new byte[] { 0, 35 };
       else
