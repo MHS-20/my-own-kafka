@@ -18,13 +18,24 @@ public class Main {
       // Wait for connection from client
       clientSocket = serverSocket.accept();
 
-      // get correlation_id from client
-      byte[] correlation_id = new byte[4]; 
-      byte[] other_fields = clientSocket.getInputStream().readNBytes(8);
+      // get fields from request
+      byte[] message_size = new byte[4]; 
+      byte[] request_api_key = new byte[2]; 
+      byte[] request_api_version = new byte[2];
+      byte[] correlation_id = new byte[4];       
+
+      clientSocket.getInputStream().read(message_size);
+      clientSocket.getInputStream().read(request_api_key);
+      clientSocket.getInputStream().read(request_api_version);
       clientSocket.getInputStream().read(correlation_id);
 
-      clientSocket.getOutputStream().write(new byte[] {0, 0, 0, 0});
+      // send response
+      message_size = new byte[]{0, 0, 0, 4};
+      byte[] error_code = new byte[]{0, 0, 0, 23}; //35 = 23hex
+        
+      clientSocket.getOutputStream().write(message_size);
       clientSocket.getOutputStream().write(correlation_id);
+      clientSocket.getOutputStream().write(error_code);
 
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
