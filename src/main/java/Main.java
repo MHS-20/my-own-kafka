@@ -35,7 +35,7 @@ public class Main {
       byte[] max_version = new byte[2];
       short apiV = ByteBuffer.wrap(request_api_version).getShort();
       short apiK = ByteBuffer.wrap(request_api_key).getShort();
-      
+
       if (apiV > 4)
         error_code = new byte[] { 0, 35 };
       else
@@ -43,17 +43,34 @@ public class Main {
 
       if (apiK == 18)
         max_version = new byte[] { 0, 4 };
-      else 
+      else
         max_version = new byte[] { 0, 3 };
 
-      // send response
-      int messageSizeInt = correlation_id.length + error_code.length + max_version.length;
+      byte[] min_version = new byte[] { 0, 3 };
+      byte[] tagged_fields = new byte[] { 0 };
+      byte[] throttle_time_ms = new byte[] { 0, 0, 0, 0 };
+
+      int messageSizeInt = correlation_id.length +
+          request_api_key.length +
+          request_api_version.length +
+          error_code.length +
+          max_version.length +
+          min_version.length +
+          tagged_fields.length +
+          throttle_time_ms.length;
+
       message_size = ByteBuffer.allocate(4).putInt(messageSizeInt).array();
-      
+
       clientSocket.getOutputStream().write(message_size);
       clientSocket.getOutputStream().write(correlation_id);
+      clientSocket.getOutputStream().write(request_api_key);
+      clientSocket.getOutputStream().write(request_api_version);
       clientSocket.getOutputStream().write(error_code);
+
+      clientSocket.getOutputStream().write(min_version);
       clientSocket.getOutputStream().write(max_version);
+      clientSocket.getOutputStream().write(tagged_fields);
+      clientSocket.getOutputStream().write(throttle_time_ms);
 
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
