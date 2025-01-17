@@ -58,15 +58,15 @@ public class Main {
           min_version.length +
           tagged_fields.length +
           throttle_time_ms.length + 
-          tagged_fields.length; 
+          tagged_fields.length;
 
+      System.out.println("messageSizeInt: " + messageSizeInt);
       message_size = ByteBuffer.allocate(4).putInt(messageSizeInt).array();
-
       clientSocket.getOutputStream().write(message_size);
       clientSocket.getOutputStream().write(correlation_id);
+      clientSocket.getOutputStream().write(error_code);
       clientSocket.getOutputStream().write(request_api_key);
       clientSocket.getOutputStream().write(request_api_version);
-      clientSocket.getOutputStream().write(error_code);
 
       clientSocket.getOutputStream().write(min_version);
       clientSocket.getOutputStream().write(max_version);
