@@ -32,17 +32,28 @@ public class Main {
 
       // check api version
       byte[] error_code = new byte[2];
+      byte[] max_version = new byte[2];
       short apiV = ByteBuffer.wrap(request_api_version).getShort();
+      short apiK = ByteBuffer.wrap(request_api_key).getShort();
+      
       if (apiV > 4)
         error_code = new byte[] { 0, 35 };
       else
         error_code = new byte[] { 0, 0 };
 
+      if (apiK == 18)
+        max_version = new byte[] { 0, 4 };
+      else 
+        max_version = new byte[] { 0, 3 };
+
       // send response
-      message_size = new byte[] { 0, 0, 0, 4 };
+      int messageSizeInt = correlation_id.length + error_code.length + max_version.length;
+      message_size = ByteBuffer.allocate(4).putInt(messageSizeInt).array();
+      
       clientSocket.getOutputStream().write(message_size);
       clientSocket.getOutputStream().write(correlation_id);
       clientSocket.getOutputStream().write(error_code);
+      clientSocket.getOutputStream().write(max_version);
 
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
