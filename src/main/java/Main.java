@@ -31,10 +31,10 @@ public class Main {
       clientSocket.getInputStream().read(correlation_id);
 
       // check api version
-      byte[] error_code; 
+      byte[] error_code = new byte[2];
       int apiV = ByteBuffer.wrap(request_api_version).getInt();
       if (apiV > 4)
-        error_code = new byte[] { 0, 23 };
+        error_code = new byte[] { 0, 35 };
       else
         error_code = new byte[] { 0, 0 };
 
