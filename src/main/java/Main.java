@@ -57,7 +57,8 @@ public class Main {
           max_version.length +
           min_version.length +
           tagged_fields.length +
-          throttle_time_ms.length;
+          throttle_time_ms.length + 
+          tagged_fields.length; 
 
       message_size = ByteBuffer.allocate(4).putInt(messageSizeInt).array();
 
@@ -71,6 +72,7 @@ public class Main {
       clientSocket.getOutputStream().write(max_version);
       clientSocket.getOutputStream().write(tagged_fields);
       clientSocket.getOutputStream().write(throttle_time_ms);
+      clientSocket.getOutputStream().write(tagged_fields);
 
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
