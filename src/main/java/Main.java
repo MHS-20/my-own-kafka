@@ -50,7 +50,7 @@ public class Main {
       byte[] tagged_fields = new byte[] { 0 };
       byte[] throttle_time_ms = new byte[] { 0, 0, 0, 0 };
 
-      int messageSizeInt = correlation_id.length +
+      int messageSizeInt = 4 + correlation_id.length +
           request_api_key.length +
           request_api_version.length +
           error_code.length +
@@ -73,6 +73,19 @@ public class Main {
       clientSocket.getOutputStream().write(tagged_fields);
       clientSocket.getOutputStream().write(throttle_time_ms);
       clientSocket.getOutputStream().write(tagged_fields);
+
+      // ByteBuffer responseBuffer = ByteBuffer.allocate(messageSizeInt);
+      // responseBuffer.put(correlation_id);
+      // responseBuffer.put(request_api_key);
+      // responseBuffer.put(request_api_version);
+      // responseBuffer.put(error_code);
+      // responseBuffer.put(max_version);
+      // responseBuffer.put(min_version);
+      // responseBuffer.put(tagged_fields);
+      // responseBuffer.put(throttle_time_ms);
+
+      // // Send the response
+      // clientSocket.getOutputStream().write(responseBuffer.array());
 
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
