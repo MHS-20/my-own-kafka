@@ -14,13 +14,17 @@ public class Main {
             serverSocket.setReuseAddress(true);
 
             try (Socket clientSocket = serverSocket.accept();
-                 InputStream in = clientSocket.getInputStream();
-                 OutputStream out = clientSocket.getOutputStream()) {
+                    InputStream in = clientSocket.getInputStream();
+                    OutputStream out = clientSocket.getOutputStream()) {
 
-                processClientRequest(in, out);
+                // deamon
+                while (true) {
+                    processClientRequest(in, out);
+                }
 
             } catch (IOException e) {
                 System.err.println("Client communication error: " + e.getMessage());
+                e.printStackTrace();
             }
 
         } catch (IOException e) {
@@ -29,17 +33,22 @@ public class Main {
     }
 
     private static void processClientRequest(InputStream in, OutputStream out) throws IOException {
-        // Read and ignore the first 4 bytes (request size)
-        in.readNBytes(4);
+        // request size
+        int size = ByteBuffer.wrap(in.readNBytes(4)).getInt();
+        System.out.println("Request size: " + size);
 
         // Read the API key (16 bits) and API version (16 bits)
         byte[] apiKey = in.readNBytes(2);
+        System.out.println("API key: " + ByteBuffer.wrap(apiKey).getShort());
+
         short apiVersion = ByteBuffer.wrap(in.readNBytes(2)).getShort();
+        System.out.println("API version: " + apiVersion);
 
         // Read the correlation ID (32 bits)
         byte[] correlationId = in.readNBytes(4);
+        System.out.println("Correlation ID: " + ByteBuffer.wrap(correlationId).getInt());
 
-        // Create the response
+        byte[] body = in.readNBytes((size - 8));
         byte[] response = createResponse(apiVersion, correlationId);
 
         // Write the response size (32 bits) and the response itself
@@ -51,30 +60,33 @@ public class Main {
 
     private static byte[] createResponse(short apiVersion, byte[] correlationId) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            // Write the correlation ID
             bos.write(correlationId);
 
             if (apiVersion < 0 || apiVersion > 4) {
-                // Write error code (16 bits) for unsupported API version
-                bos.write(new byte[]{0, 35});
+                // unsupported API version
+                bos.write(new byte[] { 0, 35 });
             } else {
                 // Write success response
-                bos.write(new byte[]{0, 0}); // Error code (16 bits)
-                bos.write(2);                // Array size (1 + 1)
+                bos.write(new byte[] { 0, 0 }); // Error code (16 bits)
+                bos.write(2); // Array size (1 + 1)
 
                 // API key information
-                bos.write(new byte[]{0, 18}); // API key (16 bits)
-                bos.write(new byte[]{0, 3});  // Min version (16 bits)
-                bos.write(new byte[]{0, 4});  // Max version (16 bits)
-
-                bos.write(0);                // Tagged fields (1 byte)
+                bos.write(new byte[] { 0, 18 }); // API key (16 bits)
+                bos.write(new byte[] { 0, 3 }); // Min version (16 bits)
+                bos.write(new byte[] { 0, 4 }); // Max version (16 bits)
+                bos.write(0); // Tagged fields (1 byte)
 
                 // Throttle time
-                bos.write(new byte[]{0, 0, 0, 0}); // Throttle time (32 bits)
-                bos.write(0);                // End tagged fields (1 byte)
+                bos.write(new byte[] { 0, 0, 0, 0 }); // Throttle time (32 bits)
+                bos.write(0); // End tagged fields (1 byte)
             }
 
+            System.out.println("Response completed, size: " + bos.size());
+            System.out.println();
             return bos.toByteArray();
+        } catch (Exception e) {
+            System.err.println("Error creating response: " + e.getMessage());
+            return new byte[0];
         }
     }
 }
