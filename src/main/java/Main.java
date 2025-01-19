@@ -1,31 +1,52 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class Main {
 
     public static void main(String[] args) {
         System.err.println("Starting server...");
         final int port = 9092;
+        int i = 0;
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
 
-            try (Socket clientSocket = serverSocket.accept();
-                    InputStream in = clientSocket.getInputStream();
-                    OutputStream out = clientSocket.getOutputStream()) {
+            while (true)
+                try {
+                    Socket clientSocket = serverSocket.accept();
 
-                // deamon
-                while (true) {
-                    processClientRequest(in, out);
+                    // thread handling the client
+                    new Thread(() -> {
+                        try (InputStream in = clientSocket.getInputStream();
+                                OutputStream out = clientSocket.getOutputStream()) {
+
+                            System.out.println("Client connected: " + clientSocket.getInetAddress());
+
+                            // handle multiple requests from the same client
+                            while (!clientSocket.isClosed()) {
+                                System.out.println("Handling a request from: " + clientSocket.getInetAddress());
+                                processClientRequest(in, out);
+                            }
+
+                        } catch (SocketException e) {
+                            System.err.println("Socket closed: " + e.getMessage());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
+
+                    // // deamon
+                    // while (true) {
+                    // processClientRequest(in, out);
+                    // }
+
+                } catch (IOException e) {
+                    System.err.println("Client communication error: " + e.getMessage());
+                    e.printStackTrace();
                 }
-
-            } catch (IOException e) {
-                System.err.println("Client communication error: " + e.getMessage());
-                e.printStackTrace();
-            }
 
         } catch (IOException e) {
             System.err.println("Server error: " + e.getMessage());
